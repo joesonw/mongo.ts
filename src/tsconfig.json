@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"outDir": "builds",
+		"target": "ES6",
+		"declaration": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
+	},
+	"compileOnSave": false
+}

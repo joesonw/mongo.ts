@@ -2,10 +2,16 @@
 import Query from './';
 import Model from '../Model';
 import * as _ from 'lodash';
+import GeoCondition , {
+    Point,
+    Geometry
+} from '../Geo';
+
 export default class QueryComparison<T extends Model> {
     private key: string;
     private model: new() => T;
     private query: {[key: string] : any};
+
     constructor(model: new() => T, query: {[key: string] : any}, key: string) {
         this.key = key;
         this.model = model;
@@ -81,4 +87,72 @@ export default class QueryComparison<T extends Model> {
             }
         }, this.query));
     }
+    public all(...value: Array< Query<T> >): Query<T> {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $all: value.map(query => query.query)
+            }
+        }, this.query));
+    }
+    public elemMatch(query: Query<T>): Query<T> {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $elemMatch: query.query
+            }
+        }, this.query));
+    }
+    public size(value: number): Query<T> {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $size: value
+            }
+        }, this.query));
+    }
+
+
+    public geoWithin(geo: GeoCondition): Query<T>  {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $geoWithin: geo.query()
+            }
+        }, this.query));
+    }
+    public geoIntersects(geo: Geometry): Query<T>  {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $geoIntersects: {
+                    $geometry: geo.query()
+                }
+            }
+        }, this.query));
+    }
+    public near(geo: Point, $maxDistance?: number, $minDistance?: number): Query<T>  {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $near: {
+                    $geometry: {
+                        type: geo.type,
+                        coordinates: geo.coordinates
+                    },
+                    $maxDistance,
+                    $minDistance
+                }
+            }
+        }, this.query));
+    }
+    public nearSphere(geo: Point, $maxDistance?: number, $minDistance?: number): Query<T>  {
+        return new Query<T>(this.model, _.extend({
+            [this.key]: {
+                $nearSphere: {
+                    $geometry: {
+                        type: geo.type,
+                        coordinates: geo.coordinates
+                    },
+                    $maxDistance,
+                    $minDistance
+                }
+            }
+        }, this.query));
+    }
+
 }
